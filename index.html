@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlagVault | Obfuscated Logic</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="nav">
+        <a href="#" class="nav-brand"><span class="bracket">[</span> FLAG<span class="brand-flag">VAULT</span> <span class="bracket">]</span></a>
+        <div class="nav-status">
+            <div class="status-dot"></div>
+            <span>SYSTEMS: OPERATIONAL</span>
+        </div>
+    </nav>
+
+    <div class="page-wrap">
+        <header class="page-header" data-index="01">
+            <div class="page-eyebrow">REVERSE ENGINEERING</div>
+            <h1 class="page-title">Obfuscated <span class="hl">Logic</span></h1>
+            <p class="page-desc">A rogue developer left behind a script that guards the vault. The logic is twisted, but the flag is hidden within the bytes.</p>
+        </header>
+
+        <main class="challenges-list">
+            <article class="challenge-card open">
+                <div class="ch-header">
+                    <span class="ch-id">CH-102</span>
+                    <span class="ch-difficulty diff-medium">Medium</span>
+                    <h2 class="ch-title">Python De-Obfuscation</h2>
+                    <span class="ch-points">250 PTS</span>
+                </div>
+                
+                <div class="ch-body">
+                    <div class="ch-section-label">Mission Briefing</div>
+                    <div class="ch-desc">
+                        We intercepted a file named <code>obfuscated.py</code>. It appears to be a password checker. If you can bypass the check or extract the constants, the flag is yours. 
+                        <br><br>
+                        <strong>Target:</strong> Analyze the source code and reconstruct the flag.
+                    </div>
+
+                    <div class="ch-section-label">Resources</div>
+                    <div style="margin-bottom: 2rem;">
+                        <a href="obfuscated.py" download class="btn btn-danger" style="display: inline-block;">
+                            Download obfuscated.py
+                        </a>
+                    </div>
+
+                    <div class="ch-section-label">Hints</div>
+                    <div class="hints-container">
+                        <div class="hint-item" id="hint1">
+                            <button class="hint-toggle" onclick="toggleHint('hint1')">
+                                <span class="hint-num">HINT 1</span>
+                                <span>Check the encoding...</span>
+                                <span class="hint-cost">-50 PTS</span>
+                            </button>
+                            <div class="hint-content">Look for Base64 strings or ASCII character arrays within the script.</div>
+                        </div>
+                    </div>
+
+                    <div class="flag-format">
+                        <span class="flag-icon">⚑</span>
+                        <span>Flag Format: <strong>FlagVault{...}</strong></span>
+                    </div>
+
+                    <section class="submit-section">
+                        <h3 class="submit-title">SUBMIT FLAG</h3>
+                        <p class="submit-sub">Enter the discovered flag to claim your points.</p>
+                        
+                        <div class="flag-input-wrap">
+                            <span class="prefix">FlagVault{</span>
+                            <input type="text" id="flagInput" class="form-control" placeholder="YOUR_FLAG_HERE">
+                        </div>
+                        <button class="btn btn-primary" onclick="submitFlag()">Validate String</button>
+                        
+                        <div id="result" class="submit-result"></div>
+                    </section>
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-brand">FLAG<span>VAULT</span> CTF HUB</div>
+        <div class="footer-copy">&copy; 2026 Neural Security Systems. All Rights Reserved.</div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
