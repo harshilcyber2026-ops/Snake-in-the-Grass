@@ -247,13 +247,6 @@
     FLAG<span style="color:var(--accent)">VAULT</span>
     <span class="bracket">]</span>
   </a>
-  <ul class="nav-links">
-    <li><a href="#">Home</a></li>
-    <li><a href="#" class="active">Challenges</a></li>
-    <li><a href="#">Scoreboard</a></li>
-    <li><a href="#">Tools</a></li>
-    <li><a href="#">Rules</a></li>
-  </ul>
   <div class="nav-status">
     <span class="status-dot"></span>
     <span>CTF LIVE</span>
@@ -356,77 +349,7 @@
         </p>
       </div>
 
-      <!-- Hints -->
-      <div class="sec-divider"><h3>Hints</h3></div>
-      <div class="hints-container">
-        <div class="hint-item" id="h1">
-          <button class="hint-toggle" onclick="revealHint('h1')">
-            <span class="hint-num">HINT 01</span>
-            Start with the outermost lambda and work inward.
-            <span class="hint-cost">-50 pts</span>
-          </button>
-          <div class="hint-content">
-            <code style="background:transparent;border:none;">_b64</code> is applied first, then
-            <code style="background:transparent;border:none;">_ugh</code>. That means:
-            <code style="background:transparent;border:none;">_k = rot13( base64_decode("aGFlNGkzeV96Mw==") )</code>.
-            Decode the base64 string first, then apply ROT13 to the result.
-          </div>
-        </div>
-        <div class="hint-item" id="h2">
-          <button class="hint-toggle" onclick="revealHint('h2')">
-            <span class="hint-num">HINT 02</span>
-            What is the <code style="background:transparent;border:none;color:var(--text-dim)">___</code> array used for?
-            <span class="hint-cost">-75 pts</span>
-          </button>
-          <div class="hint-content">
-            The <code style="background:transparent;border:none;">___</code> list stores the flag XOR'd with key
-            <code style="background:transparent;border:none;">0x5A</code>.
-            The function <code style="background:transparent;border:none;">_xo(buf, key)</code> decodes it.
-            You don't need this to get the password — only the script needs it.
-          </div>
-        </div>
-        <div class="hint-item" id="h3">
-          <button class="hint-toggle" onclick="revealHint('h3')">
-            <span class="hint-num">HINT 03</span>
-            Stuck on Base64?
-            <span class="hint-cost">-100 pts</span>
-          </button>
-          <div class="hint-content">
-            Open a Python shell and run exactly:<br>
-            <code style="background:transparent;border:none;color:var(--accent)">import base64, codecs</code><br>
-            <code style="background:transparent;border:none;color:var(--accent)">codecs.decode(base64.b64decode("aGFlNGkzeV96Mw==").decode(), 'rot_13')</code><br>
-            That gives you the password directly.
-          </div>
-        </div>
-      </div>
-
-      <!-- Flag Format -->
-      <div class="flag-format">
-        <span class="flag-icon">⚑</span>
-        <span>Flag format: <strong>FlagVault{your_flag_here}</strong></span>
-      </div>
-
-      <!-- Submit Section -->
-      <div class="submit-section">
-        <div class="submit-title">Submit Your Flag</div>
-        <p class="submit-sub">Run obfuscated.py with the correct password — copy the flag it prints.</p>
-
-        <div class="flag-input-wrap">
-          <span class="prefix">FlagVault{</span>
-          <input
-            class="form-control"
-            id="flagInput"
-            type="text"
-            placeholder="your_flag_here}"
-            autocomplete="off"
-            spellcheck="false"
-          />
-        </div>
-
-        <div class="flag-submit-row" style="margin-top:0;">
-          <button class="btn btn-primary" onclick="submitFlag()">⚑ &nbsp;Submit Flag</button>
-          <button class="btn btn-danger" onclick="clearFlag()">✕ &nbsp;Clear</button>
-        </div>
+    
 
         <!-- Result banners -->
         <div class="solved-banner" id="solvedBanner">
@@ -435,11 +358,6 @@
             <div style="font-weight:bold;margin-bottom:0.2rem;color:var(--accent)">CORRECT FLAG — Challenge Solved!</div>
             <div style="font-size:0.72rem;color:var(--text-dim)">You successfully reversed the obfuscation. Well done, reverse engineer.</div>
           </div>
-          <span class="sb-pts">+300 pts</span>
-        </div>
-
-        <div class="submit-result incorrect" id="wrongBanner">
-          ✕ &nbsp;Incorrect flag. Did you enter the full <code style="background:transparent;border:none;">FlagVault{...}</code> output from the script?
         </div>
       </div>
 
@@ -460,29 +378,13 @@
           <span class="meta-val"><span class="tag tag-amber">Medium</span></span>
         </div>
         <div class="meta-row">
-          <span class="meta-key">Points</span>
-          <span class="meta-val amber">300 pts</span>
-        </div>
-        <div class="meta-row">
           <span class="meta-key">Author</span>
           <span class="meta-val green">FlagVault Team</span>
-        </div>
-        <div class="meta-row">
-          <span class="meta-key">Release</span>
-          <span class="meta-val">Day 1, 00:00 UTC</span>
         </div>
         <div class="meta-row">
           <span class="meta-key">Target</span>
           <span class="meta-val"><code style="font-size:0.72rem">obfuscated.py</code></span>
         </div>
-        <div class="meta-row">
-          <span class="meta-key">Solves</span>
-          <span class="meta-val green" id="solveCount">47</span>
-        </div>
-        <div class="solve-bar-wrap">
-          <div class="solve-bar-label">
-            <span>Solve Rate</span><span id="solveRate">47 / 120</span>
-          </div>
           <div class="solve-bar"><div class="solve-bar-fill" id="solveFill"></div></div>
         </div>
       </div>
@@ -535,7 +437,7 @@
 <footer class="footer">
   <div class="footer-brand">FLAG<span>VAULT</span> CTF</div>
   <div class="footer-copy">
-    Challenge: Snake in the Grass &nbsp;·&nbsp; Category: Reverse Engineering &nbsp;·&nbsp; 300 pts
+    Challenge: Snake in the Grass &nbsp;·&nbsp; Category: Reverse Engineering &nbsp;·&nbsp;
   </div>
 </footer>
 
