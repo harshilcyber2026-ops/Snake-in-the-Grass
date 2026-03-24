@@ -1,61 +1,544 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlagVault | Obfuscated Logic</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake in the Grass — FlagVault CTF</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── challenge-page extras ── */
+    .ch-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .ch-layout { grid-template-columns: 1fr; } }
+
+    /* sidebar */
+    .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
+    .side-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+    }
+    .side-card-title {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 3px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .meta-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(22,64,96,0.4);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+    }
+    .meta-row:last-child { border-bottom: none; }
+    .meta-key   { color: var(--text-dim); }
+    .meta-val   { color: var(--text-hi); }
+    .meta-val.green  { color: var(--accent); }
+    .meta-val.amber  { color: var(--accent3); }
+    .meta-val.red    { color: var(--accent2); }
+
+    /* download button */
+    .dl-btn {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      text-decoration: none;
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+    .dl-btn:hover {
+      border-color: var(--accent);
+      background: rgba(0,232,200,0.06);
+      transform: translateX(3px);
+    }
+    .dl-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .dl-name {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+    .dl-size {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-dim);
+    }
+    .dl-arrow {
+      margin-left: auto;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      transition: transform var(--transition);
+    }
+    .dl-btn:hover .dl-arrow { transform: translateX(4px); color: var(--accent); }
+
+    /* walkthrough / description panels */
+    .desc-block {
+      background: var(--surface2);
+      border-left: 3px solid var(--accent4);
+      padding: 1.2rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
+      color: var(--text);
+      line-height: 1.85;
+      margin-bottom: 1.5rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .desc-block p + p { margin-top: 0.75rem; }
+    .desc-block .hl   { color: var(--accent); }
+    .desc-block .hl2  { color: var(--accent2); }
+    .desc-block .hl3  { color: var(--accent3); }
+
+    /* code snippet block */
+    .code-block {
+      background: #020a10;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      line-height: 1.75;
+      position: relative;
+    }
+    .code-block .cmt  { color: var(--text-dim); }
+    .code-block .kw   { color: var(--accent2); }
+    .code-block .str  { color: var(--accent3); }
+    .code-block .fn   { color: #7dd3fc; }
+    .code-label {
+      position: absolute; top: 0.6rem; right: 0.8rem;
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      background: var(--surface2);
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+    }
+
+    /* solvers progress bar */
+    .solve-bar-wrap {
+      margin-top: 0.6rem;
+    }
+    .solve-bar-label {
+      display: flex; justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-bottom: 0.35rem;
+    }
+    .solve-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .solve-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* flag submit extras */
+    .flag-submit-row {
+      display: flex; gap: 0.75rem; align-items: flex-end;
+      margin-top: 1rem;
+    }
+    .flag-submit-row .flag-input-wrap { flex: 1; margin-bottom: 0; }
+
+    /* solved overlay */
+    .solved-banner {
+      display: none;
+      align-items: center; gap: 1rem;
+      background: rgba(0,232,200,0.07);
+      border: 1px solid rgba(0,232,200,0.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.4rem;
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent);
+      animation: fadeUp 0.4s ease;
+    }
+    .solved-banner.show { display: flex; }
+    .solved-banner .sb-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .solved-banner .sb-pts {
+      margin-left: auto;
+      font-family: var(--font-hud);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent3);
+    }
+
+    /* wrong shake */
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* terminal emulator easter egg */
+    .terminal-emu {
+      background: #010810;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .emu-bar {
+      background: var(--surface2);
+      padding: 0.5rem 1rem;
+      display: flex; align-items: center; gap: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .emu-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .emu-title {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin: 0 auto;
+      letter-spacing: 1px;
+    }
+    .emu-body {
+      padding: 1rem 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.8;
+      color: #5a8060;
+      min-height: 120px;
+    }
+    .emu-body .ep  { color: var(--accent2); }
+    .emu-body .ev  { color: var(--accent3); }
+    .emu-body .eok { color: var(--accent); }
+  </style>
 </head>
 <body>
 
-    <nav class="nav">
-        <a href="#" class="nav-brand"><span class="bracket">[</span> FLAG<span class="brand-flag">VAULT</span> <span class="bracket">]</span></a>
-        <div class="nav-status">
-            <div class="status-dot"></div>
-            <span>SYSTEMS: OPERATIONAL</span>
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <span class="bracket">[</span>
+    <span class="brand-flag">⚑</span>
+    FLAG<span style="color:var(--accent)">VAULT</span>
+    <span class="bracket">]</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#" class="active">Challenges</a></li>
+    <li><a href="#">Scoreboard</a></li>
+    <li><a href="#">Tools</a></li>
+    <li><a href="#">Rules</a></li>
+  </ul>
+  <div class="nav-status">
+    <span class="status-dot"></span>
+    <span>CTF LIVE</span>
+  </div>
+</nav>
+
+<!-- ═══ PAGE WRAP ═══ -->
+<div class="page-wrap">
+
+  <!-- Breadcrumb -->
+  <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:2rem;display:flex;align-items:center;gap:0.5rem;">
+    <a href="#" style="color:var(--text-dim)">challenges</a>
+    <span>/</span>
+    <a href="#" style="color:var(--text-dim)">reverse-engineering</a>
+    <span>/</span>
+    <span style="color:var(--accent)">snake-in-the-grass</span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="page-header" data-index="RE">
+    <div class="page-eyebrow">⚙ Reverse Engineering · Challenge #04</div>
+    <h1 class="page-title">Snake in the <span class="hl2">Grass</span></h1>
+    <p class="page-desc">A heavily obfuscated Python script checks a password and prints the flag. Unravel the layers.</p>
+  </div>
+
+  <!-- Layout -->
+  <div class="ch-layout">
+
+    <!-- ── LEFT: Main Content ── -->
+    <div class="ch-main">
+
+      <!-- Challenge Description -->
+      <div class="sec-divider"><h3>Description</h3></div>
+      <div class="desc-block">
+        <p>
+          You've intercepted a Python script from a suspicious server. It prompts for a password,
+          and only reveals the flag when the correct one is entered.
+        </p>
+        <p>
+          The script uses <span class="hl">multiple layers of obfuscation</span> to hide the password —
+          lambdas, encoding chains, and hash verification. Your job is to
+          <span class="hl2">reverse the logic</span> without brute-forcing it.
+        </p>
+        <p>
+          No external dependencies. Just Python 3 and your brain.
+          <span class="hl3">Read carefully — every variable name is a red herring.</span>
+        </p>
+      </div>
+
+      <!-- Terminal preview -->
+      <div class="sec-divider"><h3>Script Preview</h3></div>
+      <div class="terminal-emu">
+        <div class="emu-bar">
+          <div class="emu-dot" style="background:#ff5f56"></div>
+          <div class="emu-dot" style="background:#ffbd2e"></div>
+          <div class="emu-dot" style="background:#27c93f"></div>
+          <div class="emu-title">obfuscated.py — preview</div>
         </div>
-    </nav>
+        <div class="emu-body">
+          <span class="cmt" style="color:var(--text-dim)"># ╔══════════════════════════════════════════════╗</span><br>
+          <span class="cmt" style="color:var(--text-dim)"># ║   FlagVault CTF  ::  Snake in the Grass     ║</span><br>
+          <span class="cmt" style="color:var(--text-dim)"># ╚══════════════════════════════════════════════╝</span><br><br>
+          <span class="ep">import</span> sys, base64, codecs, hashlib<br><br>
+          _ugh = <span class="ev">lambda</span> z: codecs.decode(z, <span class="ep">'rot_13'</span>)<br>
+          _b64 = <span class="ev">lambda</span> z: base64.b64decode(z).decode()<br><br>
+          ___ = [<span class="ev">28,54,59,61,12,59,47,54,46</span> ...] <span class="cmt" style="color:var(--text-dim)"># ???</span><br><br>
+          _k = _ugh(_b64(<span class="ep">"aGFlNGkzeV96Mw=="</span>))<br>
+          _kh = hashlib.sha256(_k.encode()).digest()<br><br>
+          <span class="ep">def</span> _chk(s):<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="ep">return</span> hashlib.sha256(s.encode()).digest() == _kh<br><br>
+          <span class="eok">...</span> <span class="cmt" style="color:var(--text-dim)"># download the full file below</span>
+        </div>
+      </div>
 
-    <div class="page-wrap">
-        <header class="page-header" data-index="01">
-            <div class="page-eyebrow">REVERSE ENGINEERING</div>
-            <h1 class="page-title">Obfuscated <span class="hl">Logic</span></h1>
-            <p class="page-desc">A rogue developer left behind a script that guards the vault. The logic is twisted, but the flag is hidden within the bytes.</p>
-        </header>
+      <!-- Download -->
+      <div class="sec-divider"><h3>Download</h3></div>
+      <a class="dl-btn" id="dlBtn" href="files/obfuscated.py" download="obfuscated.py">
+        <span class="dl-icon">🐍</span>
+        <span class="dl-info">
+          <span class="dl-name">obfuscated.py</span>
+          <span class="dl-size">Python 3 · ~1.4 KB · No external deps</span>
+        </span>
+        <span class="dl-arrow">→</span>
+      </a>
 
-        <main class="challenges-list">
-            <article class="challenge-card open">
-                <div class="ch-header">
-                    <span class="ch-id">CH-102</span>
-                    <span class="ch-difficulty diff-medium">Medium</span>
-                    <h2 class="ch-title">Python De-Obfuscation</h2>
-                    <span class="ch-points">250 PTS</span>
-                </div>
-                
-                <div class="ch-body">
-                    <div class="ch-section-label">Mission Briefing</div>
-                    <div class="ch-desc">
-                        We intercepted a file named <code>obfuscated.py</code>. It appears to be a password checker. If you can bypass the check or extract the constants, the flag is yours. 
-                        <br><br>
-                        <strong>Target:</strong> Analyze the source code and reconstruct the flag.
-                    </div>
+      <!-- Approach guidance -->
+      <div class="sec-divider"><h3>Approach</h3></div>
+      <div class="desc-block">
+        <p>
+          <span class="hl">Step 1 —</span> Read the script top to bottom. Identify each obfuscation layer individually.
+        </p>
+        <p>
+          <span class="hl">Step 2 —</span> Trace the credential variable <code style="background:transparent;border:none;color:var(--accent3)">_k</code> backwards through the transformation chain.
+        </p>
+        <p>
+          <span class="hl">Step 3 —</span> Once you have the password, run the script locally and enter it. The flag will be revealed.
+        </p>
+        <p>
+          <span class="hl3">⚑ Submit the flag in the form below — not the password.</span>
+        </p>
+      </div>
 
-                    <div class="ch-section-label">Resources</div>
-                    <div style="margin-bottom: 2rem;">
-                        <a href="obfuscated.py" download class="btn btn-danger" style="display: inline-block;">
-                            Download obfuscated.py
-                        </a>
-                    </div>
-                </div>
-            </article>
-        </main>
-    </div>
+      <!-- Hints -->
+      <div class="sec-divider"><h3>Hints</h3></div>
+      <div class="hints-container">
+        <div class="hint-item" id="h1">
+          <button class="hint-toggle" onclick="revealHint('h1')">
+            <span class="hint-num">HINT 01</span>
+            Start with the outermost lambda and work inward.
+            <span class="hint-cost">-50 pts</span>
+          </button>
+          <div class="hint-content">
+            <code style="background:transparent;border:none;">_b64</code> is applied first, then
+            <code style="background:transparent;border:none;">_ugh</code>. That means:
+            <code style="background:transparent;border:none;">_k = rot13( base64_decode("aGFlNGkzeV96Mw==") )</code>.
+            Decode the base64 string first, then apply ROT13 to the result.
+          </div>
+        </div>
+        <div class="hint-item" id="h2">
+          <button class="hint-toggle" onclick="revealHint('h2')">
+            <span class="hint-num">HINT 02</span>
+            What is the <code style="background:transparent;border:none;color:var(--text-dim)">___</code> array used for?
+            <span class="hint-cost">-75 pts</span>
+          </button>
+          <div class="hint-content">
+            The <code style="background:transparent;border:none;">___</code> list stores the flag XOR'd with key
+            <code style="background:transparent;border:none;">0x5A</code>.
+            The function <code style="background:transparent;border:none;">_xo(buf, key)</code> decodes it.
+            You don't need this to get the password — only the script needs it.
+          </div>
+        </div>
+        <div class="hint-item" id="h3">
+          <button class="hint-toggle" onclick="revealHint('h3')">
+            <span class="hint-num">HINT 03</span>
+            Stuck on Base64?
+            <span class="hint-cost">-100 pts</span>
+          </button>
+          <div class="hint-content">
+            Open a Python shell and run exactly:<br>
+            <code style="background:transparent;border:none;color:var(--accent)">import base64, codecs</code><br>
+            <code style="background:transparent;border:none;color:var(--accent)">codecs.decode(base64.b64decode("aGFlNGkzeV96Mw==").decode(), 'rot_13')</code><br>
+            That gives you the password directly.
+          </div>
+        </div>
+      </div>
 
-    <footer class="footer">
-        <div class="footer-brand">FLAG<span>VAULT</span> CTF HUB</div>
-        <div class="footer-copy">&copy; 2026 Neural Security Systems. All Rights Reserved.</div>
-    </footer>
+      <!-- Flag Format -->
+      <div class="flag-format">
+        <span class="flag-icon">⚑</span>
+        <span>Flag format: <strong>FlagVault{your_flag_here}</strong></span>
+      </div>
 
-    <script src="script.js"></script>
+      <!-- Submit Section -->
+      <div class="submit-section">
+        <div class="submit-title">Submit Your Flag</div>
+        <p class="submit-sub">Run obfuscated.py with the correct password — copy the flag it prints.</p>
+
+        <div class="flag-input-wrap">
+          <span class="prefix">FlagVault{</span>
+          <input
+            class="form-control"
+            id="flagInput"
+            type="text"
+            placeholder="your_flag_here}"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="flag-submit-row" style="margin-top:0;">
+          <button class="btn btn-primary" onclick="submitFlag()">⚑ &nbsp;Submit Flag</button>
+          <button class="btn btn-danger" onclick="clearFlag()">✕ &nbsp;Clear</button>
+        </div>
+
+        <!-- Result banners -->
+        <div class="solved-banner" id="solvedBanner">
+          <span class="sb-icon">🏆</span>
+          <div>
+            <div style="font-weight:bold;margin-bottom:0.2rem;color:var(--accent)">CORRECT FLAG — Challenge Solved!</div>
+            <div style="font-size:0.72rem;color:var(--text-dim)">You successfully reversed the obfuscation. Well done, reverse engineer.</div>
+          </div>
+          <span class="sb-pts">+300 pts</span>
+        </div>
+
+        <div class="submit-result incorrect" id="wrongBanner">
+          ✕ &nbsp;Incorrect flag. Did you enter the full <code style="background:transparent;border:none;">FlagVault{...}</code> output from the script?
+        </div>
+      </div>
+
+    </div><!-- /.ch-main -->
+
+    <!-- ── RIGHT: Sidebar ── -->
+    <aside class="sidebar">
+
+      <!-- Meta info -->
+      <div class="side-card">
+        <div class="side-card-title">// Challenge Info</div>
+        <div class="meta-row">
+          <span class="meta-key">Category</span>
+          <span class="meta-val"><span class="tag tag-purple">Reverse Engineering</span></span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Difficulty</span>
+          <span class="meta-val"><span class="tag tag-amber">Medium</span></span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Points</span>
+          <span class="meta-val amber">300 pts</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Author</span>
+          <span class="meta-val green">FlagVault Team</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Release</span>
+          <span class="meta-val">Day 1, 00:00 UTC</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Target</span>
+          <span class="meta-val"><code style="font-size:0.72rem">obfuscated.py</code></span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-key">Solves</span>
+          <span class="meta-val green" id="solveCount">47</span>
+        </div>
+        <div class="solve-bar-wrap">
+          <div class="solve-bar-label">
+            <span>Solve Rate</span><span id="solveRate">47 / 120</span>
+          </div>
+          <div class="solve-bar"><div class="solve-bar-fill" id="solveFill"></div></div>
+        </div>
+      </div>
+
+      <!-- Tools suggested -->
+      <div class="side-card">
+        <div class="side-card-title">// Suggested Tools</div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+          <div class="tool-card" style="--tool-color:var(--accent3)">
+            <span class="tool-icon">🐍</span>
+            <div class="tool-name">Python 3 REPL</div>
+            <span class="tool-tag">runtime</span>
+            <p class="tool-desc">Run and trace the script interactively in a local shell.</p>
+          </div>
+          <div class="tool-card" style="--tool-color:var(--accent)">
+            <span class="tool-icon">🔓</span>
+            <div class="tool-name">CyberChef</div>
+            <span class="tool-tag">decoder</span>
+            <p class="tool-desc">Decode Base64 and ROT13 without writing any code.</p>
+          </div>
+          <div class="tool-card" style="--tool-color:var(--accent4)">
+            <span class="tool-icon">🔬</span>
+            <div class="tool-name">Static Analysis</div>
+            <span class="tool-tag">manual re</span>
+            <p class="tool-desc">Read the source — no debugger needed for this one.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent solvers -->
+      <div class="side-card">
+        <div class="side-card-title">// Recent Solvers</div>
+        <div id="solverList" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+      </div>
+
+      <!-- Flag format reminder -->
+      <div class="side-card" style="border-left:3px solid var(--accent2);">
+        <div class="side-card-title">// Flag Format</div>
+        <code style="display:block;font-size:0.78rem;word-break:break-all;">FlagVault{your_flag_here}</code>
+        <p style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-dim);margin-top:0.6rem;">
+          Copy the exact output from the script after entering the correct password.
+        </p>
+      </div>
+
+    </aside>
+  </div><!-- /.ch-layout -->
+</div><!-- /.page-wrap -->
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-brand">FLAG<span>VAULT</span> CTF</div>
+  <div class="footer-copy">
+    Challenge: Snake in the Grass &nbsp;·&nbsp; Category: Reverse Engineering &nbsp;·&nbsp; 300 pts
+  </div>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
