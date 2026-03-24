@@ -1,5 +1,5 @@
 // FlagVault CTF Scripting
-const CORRECT_FLAG_INNER = "PY_REVERSE_MASTER_99";
+const CORRECT_FLAG_INNER = "py_0bfusc4t10n_d3c0d3d";
 
 function toggleHint(id) {
     const hint = document.getElementById(id);
